@@ -5,12 +5,22 @@ import numpy as np
 import sys
 from tsneFunctions import normalize_columns, tsne
 import json
-from collections import OrderedDict
+from itertools import chain
+
+
+def get_all_keys(current_dict):
+    children = []
+    for k in current_dict:
+        yield k
+        if isinstance(current_dict[k], dict):
+            children.append(get_all_keys(current_dict[k]))
+    for k in chain.from_iterable(children):
+        yield k
 
 
 def listRecursive(d, key):
     for k, v in d.items():
-        if isinstance(v, OrderedDict):
+        if isinstance(v, dict):
             for found in listRecursive(v, key):
                 yield found
         if k == key:
@@ -77,6 +87,8 @@ def remote_1(args):
            "shared_Y" : the low-dimensional remote site data
            }
        '''
+
+    raise Exception("I am here")
 
     shared_X = np.loadtxt('test/input/simulatorRun/shared_x.txt')
     shared_Y = np.loadtxt('test/input/simulatorRun/shared_y.txt')
@@ -233,11 +245,13 @@ def remote_3(args):
 
 
 if __name__ == '__main__':
+
     np.random.seed(0)
 
     parsed_args = json.loads(sys.argv[1])
+
     phase_key = list(
-        listRecursive(OrderedDict(parsed_args), 'computation_phase'))
+        listRecursive(parsed_args, 'computation_phase'))
 
     if 'local_noop' in phase_key:
         computation_output = remote_1(parsed_args)

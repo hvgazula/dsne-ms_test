@@ -5,12 +5,11 @@ import json
 import sys
 from tsneFunctions import normalize_columns, tsne, master_child
 from itertools import chain
-from collections import OrderedDict
 
 
 def listRecursive(d, key):
     for k, v in d.items():
-        if isinstance(v, OrderedDict):
+        if isinstance(v, dict):
             for found in listRecursive(v, key):
                 yield found
         if k == key:
@@ -185,7 +184,7 @@ if __name__ == '__main__':
 
     parsed_args = json.loads(sys.argv[1])
     phase_key = list(
-        listRecursive(OrderedDict(parsed_args), 'computation_phase'))
+        listRecursive(parsed_args, 'computation_phase'))
 
     if not phase_key:
         computation_output = local_noop(parsed_args)
