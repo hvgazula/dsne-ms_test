@@ -5,6 +5,39 @@ Created on Mon Jan 152017
 """
 
 import numpy as np
+from itertools import chain
+
+
+def get_all_keys(current_dict):
+    children = []
+    for k in current_dict:
+        yield k
+        if isinstance(current_dict[k], dict):
+            children.append(get_all_keys(current_dict[k]))
+    for k in chain.from_iterable(children):
+        yield k
+
+
+def listRecursive(d, key):
+    for k, v in d.items():
+        if isinstance(v, dict):
+            for found in listRecursive(v, key):
+                yield found
+        if k == key:
+            yield v
+
+
+def demeanS(Y, average_Y):
+    ''' Subtract Y(low dimensional shared value )by the average_Y and
+    return the updated Y) '''
+
+    return Y - np.tile(average_Y, (Y.shape[0], 1))
+
+
+def demeanL(Y, average_Y):
+    ''' It will take Y and average_Y of only local site data and return the
+    updated Y by subtracting IY'''
+    return Y - np.tile(average_Y, (Y.shape[0], 1))
 
 
 def Hbeta(D=np.array([]), beta=1.0):
@@ -34,14 +67,16 @@ def x2p(X=np.array([]), tol=1e-5, perplexity=30.0):
     conditional Gaussian has the same perplexity.
 
     Returns:
-        P: P is computed based on euclidean distance, perplexity and variance from high dimensional space. Suppose, if point 5 is near of point 1
-        in high dimensional space the P value(P51) would be high. if point 5 is far of point 1
-        in high dimensional space the P value(P51) would be low.
+        P: P is computed based on euclidean distance, perplexity and variance
+        from high dimensional space. Suppose, if point 5 is near of point 1
+        in high dimensional space the P value(P51) would be high.
+        if point 5 is far of point 1 in high dimensional space the
+        P value(P51) would be low.
 
     """
 
     # Initialize some variables
-#    print("Computing pairwise distances...")
+    #    print("Computing pairwise distances...")
     (n, d) = X.shape
     sum_X = np.sum(np.square(X), 1)
     D = np.add(np.add(-2 * np.dot(X, X.T), sum_X).T, sum_X)
@@ -52,9 +87,11 @@ def x2p(X=np.array([]), tol=1e-5, perplexity=30.0):
     # Loop over all datapoints
     for i in range(n):
 
-#        # Print progress
-#        if i % 500 == 0:
-#            print("Computing P-values for point ", i, " of ", n, "...")
+        # =============================================================================
+        #         # Print progress
+        #         if i % 500 == 0:
+        #             print("Computing P-values for point ", i, " of ", n, "...")
+        # =============================================================================
 
         # Compute the Gaussian kernel and entropy for the current precision
         betamin = -np.inf
@@ -90,6 +127,8 @@ def x2p(X=np.array([]), tol=1e-5, perplexity=30.0):
         P[i, np.concatenate((np.r_[0:i], np.r_[i + 1:n]))] = thisP
 
     # Return final P-matrix
+
+
 #    print("Mean value of sigma: ", np.mean(np.sqrt(1 / beta)))
     return P
 
@@ -108,7 +147,7 @@ def pca(X=np.array([]), no_dims=50):
 
     """
 
-#    print("Preprocessing the data using PCA...")
+    #    print("Preprocessing the data using PCA...")
     (n, d) = X.shape
     X = X - np.tile(np.mean(X, 0), (n, 1))
     (l, M) = np.linalg.eig(np.dot(X.T, X))
@@ -132,8 +171,10 @@ def tsne(X=np.array([]),
        Y: low dimensiona shared data
 
     Note:
-       When computation phase is remote, it is going to do operation only on remote data. No local site data presents there.
-       When computation phase is local, it will compute gradient based on combined data(remote+local). But after computing gradient,
+       When computation phase is remote, it is going to do operation only on
+       remote data. No local site data presents there.
+       When computation phase is local, it will compute gradient based on
+       combined data(remote+local). But after computing gradient,
        it will update only local site data.
 
     Returns:
@@ -155,7 +196,7 @@ def tsne(X=np.array([]),
 
     # Check inputs
     if round(no_dims) != no_dims:
-#        print("Error: number of dimensions should be an integer.")
+        #        print("Error: number of dimensions should be an integer.")
         return -1
 
     # Initialize variables
@@ -219,11 +260,12 @@ def tsne(X=np.array([]),
             Y[Shared_length:, :] = demeanL(Y[Shared_length:, :])
 
         # Compute current value of cost function
-        if (iter + 1) % 10 == 0:
-            C = np.sum(P * np.log(P / Q))
+#        if (iter + 1) % 10 == 0:
+#            C = np.sum(P * np.log(P / Q))
+
 #            print("Iteration ", (iter + 1), ": error is ", C)
 
-        # Stop lying about P-values
+# Stop lying about P-values
         if iter == 100:
             P = P / 4
 
@@ -234,9 +276,9 @@ def tsne(X=np.array([]),
 def master_child(Y, dY, iY, gains, n, Shared_length, P, iter, C):
     # Compute pairwise affinities
 
-    max_iter = 1000
+    #    max_iter = 1000
     initial_momentum = 0.5
-    middle_momentum = 0.7
+    #    middle_momentum = 0.7
     final_momentum = 0.9
     eta = 500
     min_gain = 0.01

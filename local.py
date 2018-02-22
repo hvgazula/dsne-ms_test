@@ -3,29 +3,8 @@
 import numpy as np
 import json
 import sys
-from tsneFunctions import normalize_columns, tsne, master_child
-from itertools import chain
-
-
-def listRecursive(d, key):
-    for k, v in d.items():
-        if isinstance(v, dict):
-            for found in listRecursive(v, key):
-                yield found
-        if k == key:
-            yield v
-
-
-def updateL(Y, G):
-    ''' It will take Y and IY of only local site data and
-    return the updated Y'''
-    return Y + G
-
-
-def demeanL(Y, average_Y):
-    ''' It will take Y and average_Y of only local site data and
-    return the updated Y by subtracting IY'''
-    return Y - np.tile(average_Y, (Y.shape[0], 1))
+from tsneFunctions import normalize_columns, tsne, master_child, listRecursive
+from tsneFunctions import demeanL
 
 
 def local_noop(args):
@@ -113,7 +92,8 @@ def local_1(args):
             "local_P": local_P,
             "local_n": local_n,
             "local_gains": local_gains,
-            "shared_rows": sharedRows
+            "shared_rows": sharedRows,
+            "shared_y": shared_Y
         }
     }
 
@@ -125,6 +105,7 @@ def local_2(args):
     # corresponds to computation
 
     local_sharedRows = args["cache"]["shared_rows"]
+    shared_Y = args["cache"]["shared_rows"]
 
     compAvgError1 = args["input"]["compAvgError"]
     local_Y = args["cache"]["local_Y"]
@@ -145,8 +126,9 @@ def local_2(args):
     local_Y, local_iY, local_Q, C, local_P = master_child(
         local_Y, local_dY, local_iY, local_gains, local_n, local_sharedRows,
         local_P, iter, C)
-    local_Y[local_sharedRows:, :] = updateL(local_Y[local_sharedRows:, :],
-                                            local_iY[local_sharedRows:, :])
+    local_Y[
+        local_sharedRows:, :] = local_Y[local_sharedRows:, :] + \
+        local_iY[local_sharedRows:, :]
 
     meanValue = (np.mean(local_Y, 0))
     computation_output = {
@@ -169,22 +151,11 @@ def local_3(args):
     return 0
 
 
-def get_all_keys(current_dict):
-    children = []
-    for k in current_dict:
-        yield k
-        if isinstance(current_dict[k], dict):
-            children.append(get_all_keys(current_dict[k]))
-    for k in chain.from_iterable(children):
-        yield k
-
-
 if __name__ == '__main__':
     np.random.seed(0)
 
     parsed_args = json.loads(sys.argv[1])
-    phase_key = list(
-        listRecursive(parsed_args, 'computation_phase'))
+    phase_key = list(listRecursive(parsed_args, 'computation_phase'))
 
     if not phase_key:
         computation_output = local_noop(parsed_args)
@@ -194,6 +165,9 @@ if __name__ == '__main__':
         sys.stdout.write(computation_output)
     elif 'remote_2' in phase_key:
         computation_output = local_2(parsed_args)
+        sys.stdout.write(computation_output)
+    elif 'remote_3' in phase_key:
+        computation_output = local_3(parsed_args)
         sys.stdout.write(computation_output)
     else:
         raise ValueError("Error occurred at Local")
