@@ -311,7 +311,7 @@ def master_child(Y, dY, iY, gains, n, Shared_length, P, iter, C):
     if iter == 100:
         P = P / 4
 
-    return (Y, iY, Q, C, P)
+    return (Y, dY, iY, gains, n, Shared_length, P, C)
 
 
 def normalize_columns(X=np.array([])):
