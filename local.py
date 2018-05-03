@@ -11,7 +11,7 @@ def local_noop(args):
     input_list = args["input"]
     #a = 5
     #raise Exception(a)
-
+    #raise Exception( 'local_noop function startings')
     computation_output = {
         "output": {
             "computation_phase": 'local_noop',
@@ -56,14 +56,17 @@ def local_1(args):
 
     # corresponds to local
     #raise Exception( 'local_1 function startings')
-    shared_X = np.loadtxt('test/input/simulatorRun/shared_x.txt')
+
+    #shared_X = np.loadtxt('test/input/simulatorRun/shared_x.txt')
+    shared_X = np.loadtxt('test/input/simulatorRun/mnist2500_X.txt')
     shared_Y = np.array(args["input"]["shared_y"])
     no_dims = args["cache"]["no_dims"]
     initial_dims = args["cache"]["initial_dims"]
     perplexity = args["cache"]["perplexity"]
     sharedRows, sharedColumns = shared_X.shape
 
-    Site1Data = np.loadtxt('test/input/simulatorRun/site1_x.txt')
+    #Site1Data = np.loadtxt('test/input/simulatorRun/site1_x.txt')
+    Site1Data = np.loadtxt('test/input/simulatorRun/site1_x_high_dimensions.txt')
 
     # create combinded list by local and remote data
     combined_X = np.concatenate((shared_X, Site1Data), axis=0)
@@ -140,10 +143,13 @@ def local_2(args):
     local_Shared_Y = local_Y[:local_sharedRows, :]
     local_Shared_IY = local_IY[:local_sharedRows, :]
     meanValue = (np.mean(local_Y, 0))
-    local_Y_labels = np.loadtxt('test/input/simulatorRun/site1_y.txt')  ## there is problem here
+    #local_Y_labels = np.loadtxt('test/input/simulatorRun/site1_y.txt')  ## there is problem here
+    local_Y_labels = np.loadtxt('test/input/simulatorRun/site1_high_dimensional_label.txt')  ## there is problem here
+
 
     if iter > 2:
-        local_Y_labels = np.loadtxt('test/input/simulatorRun/site1_y.txt')  ## there is problem here
+        #local_Y_labels = np.loadtxt('test/input/simulatorRun/site1_y.txt')  ## there is problem here
+        local_Y_labels = np.loadtxt('test/input/simulatorRun/site1_high_dimensional_label.txt')  ## there is problem here
         computation_output = {
             "output": {
                 "MeanX": meanValue[0],
@@ -205,7 +211,7 @@ def local_3(args):
 if __name__ == '__main__':
     np.random.seed(0)
 
-    parsed_args = json.loads(sys.argv[1])
+    parsed_args = json.loads(sys.stdin.read())
     phase_key = list(listRecursive(parsed_args, 'computation_phase'))
 
 

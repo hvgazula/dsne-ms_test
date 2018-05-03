@@ -41,8 +41,8 @@ def remote_1(args):
            }
        '''
 
-    #shared_X = np.loadtxt('test/input/simulatorRun/mnist2500_X.txt')
-    shared_X = np.loadtxt('test/input/simulatorRun/shared_x.txt')
+    shared_X = np.loadtxt('test/input/simulatorRun/mnist2500_X.txt')
+    #shared_X = np.loadtxt('test/input/simulatorRun/shared_x.txt')
     #shared_Labels = np.loadtxt('test/input/simulatorRun/shared_y.txt')
 
     no_dims = args["input"]["local0"]["no_dims"]
@@ -54,7 +54,7 @@ def remote_1(args):
     (sharedRows, sharedColumns) = shared_X.shape
 
     init_Y = np.random.randn(sharedRows, no_dims)
-
+    #raise Exception( 'shared tsne computed at remote_1')
     shared_Y = tsne(
         shared_X,
         init_Y,
@@ -64,7 +64,7 @@ def remote_1(args):
         perplexity,
         computation_phase="remote")
 
-    #raise Exception( 'shared tsne computed at remote_1')
+
 
     computation_output = {
         "output": {
@@ -151,8 +151,8 @@ def remote_3(args):
 
     compAvgError = {'avgX': average_Y[0], 'avgY': average_Y[1], 'error': C}
 
-    if(iteration == 6):
-        raise Exception('In remote_3 after iterations 6')
+    if(iteration == 4):
+        raise Exception('In remote_3 after iterations 4')
 
     if(iteration<10):
         phase = 'remote_2';
@@ -161,8 +161,9 @@ def remote_3(args):
 
 
     if iteration == 5:
-        #shared_labels = np.loadtxt('test/input/simulatorRun/mnist2500_labels.txt')
-        shared_labels = np.loadtxt('test/input/simulatorRun/shared_y.txt')
+        #raise Exception( 'after iteration 5')
+        shared_labels = np.loadtxt('test/input/simulatorRun/mnist2500_labels.txt')
+        #shared_labels = np.loadtxt('test/input/simulatorRun/shared_y.txt')
         concat_Y = []
         concat_local_Y_labels = []
 
@@ -190,7 +191,7 @@ def remote_3(args):
         #concat_local_Y_labels = [int(j) for j in concconcat_local_Y_labelsat_Y]
 
         #raise Exception( concat_Y, concat_local_Y_labels)
-        raise Exception( 'I am deb')
+
 
 
     else:
@@ -221,7 +222,7 @@ def remote_4(args):
 if __name__ == '__main__':
 
     np.random.seed(0)
-    parsed_args = json.loads(sys.argv[1])
+    parsed_args = json.loads(sys.stdin.read())
 
     phase_key = list(listRecursive(parsed_args, 'computation_phase'))
 
