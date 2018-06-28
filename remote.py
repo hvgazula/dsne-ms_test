@@ -42,8 +42,11 @@ def remote_1(args):
        '''
 
     shared_X = np.loadtxt('test/input/simulatorRun/mnist2500_X.txt')
+    shared_Labels = np.loadtxt('test/input/simulatorRun/mnist2500_labels.txt')
     #shared_X = np.loadtxt('test/input/simulatorRun/shared_x.txt')
     #shared_Labels = np.loadtxt('test/input/simulatorRun/shared_y.txt')
+    #shared_X = np.loadtxt('test/input/simulatorRun/test_high_dimensional_mnist_data.txt')
+    #shared_Labels = np.loadtxt('test/input/simulatorRun/test_high_dimensional_mnist_label.txt')
 
     no_dims = args["input"]["local0"]["no_dims"]
     initial_dims = args["input"]["local0"]["initial_dims"]
@@ -54,7 +57,7 @@ def remote_1(args):
     (sharedRows, sharedColumns) = shared_X.shape
 
     init_Y = np.random.randn(sharedRows, no_dims)
-    #raise Exception( 'shared tsne computed at remote_1')
+
     shared_Y = tsne(
         shared_X,
         init_Y,
@@ -63,6 +66,7 @@ def remote_1(args):
         initial_dims,
         perplexity,
         computation_phase="remote")
+    #raise Exception(shared_X)
 
 
 
@@ -76,7 +80,7 @@ def remote_1(args):
             "max_iterations": max_iter
         }
     }
-
+    #raise Exception(shared_Y.shape)
     return json.dumps(computation_output)
 
 
@@ -96,7 +100,9 @@ def remote_2(args):
         local2Yvalues: Final low dimensional local site 2 data
     }
     '''
+
     Y =  np.array(args["cache"]["shared_y"])
+    #raise Exception(Y)
     average_Y = (np.mean(Y, 0))
     average_Y[0] = 0
     average_Y[1] = 0
@@ -119,7 +125,7 @@ def remote_2(args):
             "number_of_iterations": 0
         }
     }
-
+    #raise Exception(Y.shape)
     return json.dumps(computation_output)
 
 
@@ -151,19 +157,20 @@ def remote_3(args):
 
     compAvgError = {'avgX': average_Y[0], 'avgY': average_Y[1], 'error': C}
 
-    if(iteration == 4):
-        raise Exception('In remote_3 after iterations 4')
+    #if(iteration == 20):
+        #raise Exception('In remote_3 after iterations 20')
 
-    if(iteration<10):
+    if(iteration<200):
         phase = 'remote_2';
     else:
         phase = 'remote_3';
 
 
-    if iteration == 5:
-        #raise Exception( 'after iteration 5')
+    if iteration == 10:
+        raise Exception( 'after iteration 5 in line 167 of course in remote funcion')
         shared_labels = np.loadtxt('test/input/simulatorRun/mnist2500_labels.txt')
         #shared_labels = np.loadtxt('test/input/simulatorRun/shared_y.txt')
+        #shared_labels = np.loadtxt('test/input/simulatorRun/test_high_dimensional_mnist_label.txt')
         concat_Y = []
         concat_local_Y_labels = []
 
@@ -182,15 +189,16 @@ def remote_3(args):
             #np.concatenate((concat_local_Y_labels, args["input"][site]["local_Y_labels"]), axis=0)
             #concat_local_Y_labels.np.concatenate(args["input"][site]["local_Y_labels"])
 
-        #filepath = 'test/remote/output/simulatorRun/lowdimembed.txt'
-        #f = open(filepath, 'w+')
-        #for line1, line2 in zip(concat_Y, concat_local_Y_labels):
-            #f.writelines(([ str(line1), str(line2)]))
-        #f.close()
+        filepath = 'test/output/remote/simulatorRun/lowdimembed.txt'
+        f = open(filepath, 'w+')
+        for line1, line2 in zip(concat_Y, concat_local_Y_labels):
+            f.writelines(([ str(line1), str(line2)]))
+        f.close()
         #concat_Y =  [int(i) for i in concat_Y]
         #concat_local_Y_labels = [int(j) for j in concconcat_local_Y_labelsat_Y]
 
         #raise Exception( concat_Y, concat_local_Y_labels)
+        raise Exception( concat_Y, concat_local_Y_labels)
 
 
 
