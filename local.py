@@ -122,7 +122,7 @@ def local_1(args):
 def local_2(args):
 
     # corresponds to computation
-    raise Exception('test test test')
+    #raise Exception('test test test')
     local_sharedRows = args["cache"]["shared_rows"]
     shared_Y = np.array(args["cache"]["shared_y"])
 
